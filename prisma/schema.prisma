@@ -3,7 +3,21 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "cockroachdb"
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           BigInt   @id @default(autoincrement())
+  email        String   @unique
+  username     String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum crdb_internal_region {
+  gcp_southamerica_east1 @map("gcp-southamerica-east1")
+}
