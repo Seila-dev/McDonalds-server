@@ -3,43 +3,43 @@ import { prisma } from '../../prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 //import 'dotenv/config'
-require("dotenv").config()
+
 
 export class UsersController {
     async create(req: Request, res: Response) {
         try {
-            const { email, username, passwordHash } = req.body
+            const { username, email, password } = req.body
 
             const user = await prisma.user.findUnique({
                 where: {
                     email
                 }
             })
-
-            if (user) {
-                res.status(404).json({ error: 'User already exists' })
-                return
+    
+            if(user){
+               res.status(409).json({ message: "User already exists" }) 
+               return
             }
-
-            const hashedPassword = await bcrypt.hash(passwordHash, 10)
-
+    
+            const hashedPassword = await bcrypt.hash(password, 10)
+    
             const newUser = await prisma.user.create({
                 data: {
-                    email,
                     username,
+                    email,
                     passwordHash: hashedPassword
                 }
             })
-
-            res.status(201).json({ newUser })
-        } catch (error) {
-            res.status(500).send({ message: 'Internal Server Error 2' })
+    
+            res.status(201).json({ newUser, message: "User created successfully" })    
+        } catch (error: any) {
+            console.error(error)
+            res.status(500).json({ message: "Internal Server Error", error: error.message })
         }
-
     }
 
-    async login(req: Request, res: Response) {
-        const { email, passwordHash } = req.body
+    async login(request: Request, response: Response) {
+        const { email, password } = request.body
 
         try {
             const user = await prisma.user.findUnique({
@@ -48,16 +48,17 @@ export class UsersController {
                 }
             })
 
-            if(user && bcrypt.compareSync(passwordHash, user.passwordHash)) {
-                const token = jwt.sign({ id: user.id, email: user.email }, "mysecretkey", { expiresIn: '1h' })
-                res.json({ token })
+            if(user && bcrypt.compareSync(password, user.passwordHash)) {
+                const token = jwt.sign({ id: user.id }, "mysecretkey", { expiresIn: '1h'})
+                response.json({ token })
+                return
             }
 
-            res.status(401).json({ message: "Invalid credentials "})
+            response.status(401).json({ message: "Invalid credentials"})
         } catch (error) {
-            res.status(500).send({ message: 'Internal Server Error '})
-        }
-    }
+            console.error(error)
+            response.status(500).send({ message: "Internal server error"})
+        }}
 
     async profile(req: Request, res: Response) {
         res.json(req.user)
