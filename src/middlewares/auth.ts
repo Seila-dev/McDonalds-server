@@ -11,7 +11,13 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
             return
         }
 
-        const payload = jwt.verify(token, 'mysecretkey') as { id: number, email: string }
+        const secretKey = process.env.SECRET_KEY
+
+        if(!secretKey) {
+            throw new Error('SECRET_KEY is not defined in the environment variables')
+        }
+
+        const payload = jwt.verify(token, secretKey) as { id: number, email: string }
 
         const user = await prisma.user.findUnique({
             where: {
