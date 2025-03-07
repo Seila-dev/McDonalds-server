@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { prisma } from '../../prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-//import 'dotenv/config'
 
 
 export class UsersController {
@@ -48,8 +47,14 @@ export class UsersController {
                 }
             })
 
+            const secretKey = process.env.SECRET_KEY
+
+            if(!secretKey) {
+                throw new Error('SECRET_KEY is not defined in the environment variables')
+            }
+
             if(user && bcrypt.compareSync(password, user.passwordHash)) {
-                const token = jwt.sign({ id: user.id }, "mysecretkey", { expiresIn: '1h'})
+                const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: '1h'})
                 response.json({ token })
                 return
             }

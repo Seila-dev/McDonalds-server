@@ -24,7 +24,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
             return
         }
 
-        req.user = user
+        const { passwordHash, ...loggedUser} = user
+
+        req.user = loggedUser
 
         next()
 
