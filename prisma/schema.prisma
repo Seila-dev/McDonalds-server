@@ -7,6 +7,79 @@ datasource db {
   url      = env("MCDONALD_DATABASE_URL")
 }
 
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+
+  @@map("ecommerce_categories")
+}
+
+model Color {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+
+  @@map("ecommerce_colors")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  image       String
+  price       Decimal
+  discount    Decimal?
+  rating      Decimal?
+  description String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  colorId     Int      @map("color_id")
+  categoryId  Int      @map("category_id")
+  sizeId      Int      @map("size_id")
+  highlight   Boolean
+  ean         String   @unique
+  categories  Category @relation(fields: [categoryId], references: [id], map: "fk_categories")
+  colors      Color    @relation(fields: [colorId], references: [id], map: "fk_colors")
+  sizes       Size     @relation(fields: [sizeId], references: [id], map: "fk_size")
+  stocks      Stock[]
+
+  @@map("ecommerce_products")
+}
+
+model Size {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+
+  @@map("ecommerce_sizes")
+}
+
+model Stock {
+  id            Int      @id @default(autoincrement())
+  productId     Int      @map("product_id")
+  status        String
+  purchasePrice Decimal  @map("purchase_price")
+  expiryDate    DateTime @map("expiry_date")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  quantity      Int
+  products      Product  @relation(fields: [productId], references: [id], map: "fk_products")
+
+  @@map("ecommerce_stocks")
+}
+
+model EcommerceUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("ecommerce_users")
+}
+
 model McdonaldUser {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -16,77 +89,4 @@ model McdonaldUser {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("mcdonald_users")
-}
-
-model Categories {
-  id       Int        @id @default(autoincrement())
-  name     String
-  products Products[]
-
-  @@map("ecommerce_categories")
-}
-
-model Colors {
-  id       Int        @id @default(autoincrement())
-  name     String
-  products Products[]
-
-  @@map("ecommerce_colors")
-}
-
-model Products {
-  id          Int        @id @default(autoincrement())
-  name        String
-  image       String
-  price       Decimal
-  discount    Decimal?
-  rating      Decimal?
-  description String
-  created_at  DateTime   @default(now())
-  updated_at  DateTime
-  color_id    Int
-  category_id Int
-  size_id     Int
-  highlight   Boolean
-  ean         String     @unique
-  categories  Categories @relation(fields: [category_id], references: [id], map: "fk_categories")
-  colors      Colors     @relation(fields: [color_id], references: [id], map: "fk_colors")
-  sizes       Sizes      @relation(fields: [size_id], references: [id], map: "fk_size")
-  stocks      Stocks[]
-
-  @@map("ecommerce_products")
-}
-
-model Sizes {
-  id       Int        @id @default(autoincrement())
-  name     String
-  products Products[]
-
-  @@map("ecommerce_sizes")
-}
-
-model Stocks {
-  id             Int      @id @default(autoincrement())
-  product_id     Int
-  status         String
-  purchase_price Decimal
-  expiry_date    DateTime
-  created_at     DateTime @default(now())
-  updated_at     DateTime
-  quantity       Int
-  products       Products @relation(fields: [product_id], references: [id], map: "fk_products")
-
-  @@map("ecommerce_stocks")
-}
-
-model EcommerceUser {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  first_name    String
-  last_name     String
-  password_hash String
-  created_at    DateTime @default(now())
-  updated_at    DateTime
-
-  @@map("ecommerce_users")
 }
