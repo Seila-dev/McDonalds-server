@@ -19,7 +19,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 
         const payload = jwt.verify(token, secretKey) as { id: number, email: string }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.mcdonaldUser.findUnique({
             where: {
                 id: payload.id
             }
